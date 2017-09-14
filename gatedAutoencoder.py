@@ -52,17 +52,29 @@ class FactoredGatedAutoencoder:
         """ saves the model onto disk
         """
         assert(self.is_trained)
-        np.save(self.Wxf_np, modelname + "Wxf")
-        np.save(self.Wyf_np, modelname + "Wyf")
-        np.save(self.Whf_np, modelname + "Whf")
-        np.save(self.Whf_in_np, modelname + "Whf_in")
-        np.save(self.bmap_np, modelname + "bmap")
-        np.save(self.bx_np, modelname + "bx")
-        np.save(self.by_np, modelname + "by")
+        np.save(modelname + "Wxf", self.Wxf_np)
+        np.save(modelname + "Wyf", self.Wyf_np)
+        np.save(modelname + "Whf", self.Whf_np)
+        np.save(modelname + "Whf_in", self.Whf_in_np)
+        np.save(modelname + "bmap", self.bmap_np)
+        np.save(modelname + "bx", self.bx_np)
+        np.save(modelname + "by", self.by_np)
+    
+    def load_from_weights(self, modelname):
+        """ restores weights from disk
+        """
+        self.Wxf_np = np.load(modelname + "Wxf")
+        self.Wyf_np = np.load(modelname + "Wyf")
+        self.Whf_np = np.load(modelname + "Whf")
+        self.Whf_in_np = np.load(modelname + "Whf_in")
+        self.bmap_np = np.load(modelname + "bmap")
+        self.bx_np = np.load(modelname + "bx")
+        self.by_np = np.load(modelname + "by")
+        self.is_trained = True
         
     def train(self, X, Y,
               epochs=150,
-              batch_size=100,
+              batch_size=986,
               normalize_data=True):
         """ train the factored autoencoder
         X: x-input
@@ -126,7 +138,7 @@ class FactoredGatedAutoencoder:
             sess.run(init)
             
             for epoch in range(epochs):
-                total_runs = int(n / epochs)
+                total_runs = int(n / batch_size)
                 print("total:", total_runs)
                 for i in range(total_runs):
                     randidx = np.random.randint(
@@ -140,13 +152,13 @@ class FactoredGatedAutoencoder:
                        (epoch,epochs ,cost_) )
 
             # store weights
-            self.Wxf_np = Wxf.eval(sess)
-            self.Wyf_np = Wyf.eval(sess)
-            self.Whf_np = Whf.eval(sess)
-            self.Whf_in_np = Whf_in.eval(sess)
-            self.bmap_np = bmap.eval(sess)
-            self.bx_np = bx.eval(sess)
-            self.by_np = by.eval(sess)
+            self.Wxf_np = np.array(Wxf.eval(sess))
+            self.Wyf_np = np.array(Wyf.eval(sess))
+            self.Whf_np = np.array(Whf.eval(sess))
+            self.Whf_in_np = np.array(Whf_in.eval(sess))
+            self.bmap_np = np.array(bmap.eval(sess))
+            self.bx_np = np.array(bx.eval(sess))
+            self.by_np = np.array(by.eval(sess))
             self.is_trained = True
             
         
