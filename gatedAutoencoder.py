@@ -46,6 +46,19 @@ class FactoredGatedAutoencoder:
         self.p = corrutionLevel
         self.eps_vis = weight_decay_vis
         self.eps_map = weight_decay_map
+        self.is_trained = False
+    
+    def save(self, modelname):
+        """ saves the model onto disk
+        """
+        assert(self.is_trained)
+        np.save(self.Wxf_np, modelname + "Wxf")
+        np.save(self.Wyf_np, modelname + "Wyf")
+        np.save(self.Whf_np, modelname + "Whf")
+        np.save(self.Whf_in_np, modelname + "Whf_in")
+        np.save(self.bmap_np, modelname + "bmap")
+        np.save(self.bx_np, modelname + "bx")
+        np.save(self.by_np, modelname + "by")
         
     def train(self, X, Y,
               epochs=150,
@@ -124,6 +137,16 @@ class FactoredGatedAutoencoder:
 
                 cost_ = sess.run(cost, feed_dict={x: X, y: Y}) / n
                 print ("Epoch: %03d/%03d cost: %.9f" %\
-                       (epoch,epochs ,cost_) ) 
+                       (epoch,epochs ,cost_) )
+
+            # store weights
+            self.Wxf_np = Wxf.eval(sess)
+            self.Wyf_np = Wyf.eval(sess)
+            self.Whf_np = Whf.eval(sess)
+            self.Whf_in_np = Whf_in.eval(sess)
+            self.bmap_np = bmap.eval(sess)
+            self.bx_np = bx.eval(sess)
+            self.by_np = by.eval(sess)
+            self.is_trained = True
             
         
