@@ -33,7 +33,7 @@ def random_binomial(shape, p=0.0, dtype=None, seed=None):
 
 class FactoredGatedAutoencoder:
     
-    def __init__(self, numFactors, numHidden, learningRate=0.001, 
+    def __init__(self, numFactors, numHidden, learningRate=0.01, 
                  corrutionLevel=0.0,
                  normalize_data=True,
                  weight_decay_vis=0.0,
@@ -41,6 +41,7 @@ class FactoredGatedAutoencoder:
         """ Create a factored autoencoder
             tbd
         """
+        assert(corrutionLevel >= 0 and corrutionLevel <= 1)
         self.F = int(numFactors)
         self.H = int(numHidden)
         self.learningRate = learningRate
@@ -121,7 +122,7 @@ class FactoredGatedAutoencoder:
         
     def train(self, X, Y,
               epochs=150,
-              batch_size=986,
+              batch_size=1000,
               print_debug=True):
         """ train the factored autoencoder
         X: x-input
@@ -161,9 +162,12 @@ class FactoredGatedAutoencoder:
         bx = tf.Variable(np.zeros(dim, dtype='float32'), name='bx')
         by = tf.Variable(np.zeros(dim, dtype='float32'), name='by')
 
-
-        x_corrupted = tf.multiply(random_binomial(tf.shape(x),p=p),x)
-        y_corrupted = tf.multiply(random_binomial(tf.shape(y),p=p),y)
+        if p > 0.0:
+            x_corrupted = tf.multiply(random_binomial(tf.shape(x),p=p),x)
+            y_corrupted = tf.multiply(random_binomial(tf.shape(y),p=p),y)
+        else:
+            x_corrupted = x
+            y_corrupted = y
         
         fx = tf.matmul(x_corrupted , Wxf)
         fy = tf.matmul(y_corrupted , Wyf)
@@ -179,6 +183,11 @@ class FactoredGatedAutoencoder:
         
         optimizer = tf.train.AdamOptimizer(learning_rate=lr).minimize(cost)
         
+        norm_Wxf = tf.nn.l2_normalize(Wxf, [0,1], epsilon=1e-12, name=None)
+        norm_Wyf = tf.nn.l2_normalize(Wyf, [0,1], epsilon=1e-12, name=None)
+
+        Wxf_normalize = Wxf.assign(norm_Wxf)
+        Wyf_normalize = Wxf.assign(norm_Wyf)
         
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
@@ -192,6 +201,8 @@ class FactoredGatedAutoencoder:
                     batch_xs = X[randidx]
                     batch_ys = Y[randidx]  
                     sess.run(optimizer, feed_dict={x: batch_xs, y: batch_ys})
+                    sess.run(Wxf_normalize)
+                    sess.run(Wyf_normalize)
 
                 cost_ = sess.run(cost, feed_dict={x: X, y: Y}) / n
                 if print_debug:
