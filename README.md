@@ -5,7 +5,7 @@ Tensorflow implementation of the factored Gated Autoencoder (https://www.iro.umo
 
 ## Structure
 
-![fga_diagram](https://user-images.githubusercontent.com/831215/30661844-7a574cce-9e45-11e7-9c8e-a990fd10d475.png)
+![fga_diagram](https://user-images.githubusercontent.com/831215/30663074-b8304592-9e49-11e7-8c41-5ee7e663eacc.png)
 
 
 # Reference
